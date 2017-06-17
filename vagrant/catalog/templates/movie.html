@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{movie.title}}{% endblock %}
+{% block head %}
+	{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="row movie-title">
+	{{movie.title}}
+</div>
+<div class="row">
+	<div class="col-md-12 center-block">
+		<img src="{{movie.poster}}">
+	</div>
+</div>
+
+<p> Ratings </p>
+<div class="progress">
+  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+</div>
+
+<p> Leave a Rating </p>
+	<div class="stars">
+    	<input id="star1" type="checkbox" class="with-font" />
+    	<label for="star1"></label>
+  </div>
+  <div class="stars">
+    	<input id="star2" type="checkbox" class="with-font"/>
+    	<label for="star2"></label>
+  </div>
+  <div class="stars">
+    	<input id="star3" type="checkbox" class="with-font" />
+    	<label for="star3"></label>
+  </div>
+  <div class="stars">
+    	<input id="star4" type="checkbox" class="with-font" />
+    	<label for="star4"></label>
+  </div>
+  <div class="stars">
+    	<input id="star5" type="checkbox" class="with-font" />
+    	<label for="star5"></label>
+  </div>
+
+</form>
+{% endblock %}
