@@ -1,10 +1,10 @@
 #from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 from flask import Flask, render_template, request
 from flask_bootstrap import Bootstrap
-from flask.ext.scss import Scss
+from flask_scss import Scss
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Movie
+from database_setup import Base, Movie, Rating, Person
 from flask import session as login_session
 import random
 import string
@@ -27,8 +27,7 @@ def homePage():
 @app.route('/movie/<int:movie_id>/')
 def showMovie(movie_id):
 	movie = session.query(Movie).filter_by(id=movie_id).one()
-	print('movie obj')
-	print(movie)
+	ratings = session.query(Rating).filter_by(movie_id = movie_id)
 	return render_template('movie.html', movie=movie)
 
 if __name__ == '__main__':
