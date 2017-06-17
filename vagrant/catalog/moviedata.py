@@ -1,7 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from database_setup import Movie, Base
+from database_setup import Movie, Person, Base
+import requests
+
+# movie db api access - to get date for movie objects
+data_string = ("https://api.themoviedb.org/3/search/movie?api_key"
+               "=0bf21ff60196bf22bce9136c1db1da7c&query=")
 
 engine = create_engine('sqlite:///moviereviews.db')
 Base.metadata.bind = engine
@@ -9,47 +14,58 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-# movie data 
-manchester_by_the_sea = Movie(title="Manchester By The Sea", 
-	summary="A depressed uncle is asked to take care of his teenage nephew after the boy's father dies.",
-	industry_rating="R")
+def create_person_obj(fName, lName, school):
+	newPerson = Person(first_name=fName, last_name=lName, school=school)
+	session.add(newPerson)
+	session.commit()
+	return newPerson
 
-session.add(manchester_by_the_sea)
-session.commit()
+def create_movie_obj(movie, moviePerson):
+	# collect initial data from movie database
+	search_params = ''
+	for word in movie.split():
+		search_params += word+'+'
+	search_movie = data_string + search_params
 
-rain_man = Movie(title="Rain Man", 
-	summary="Selfish yuppie Charlie Babbitt's father left a fortune to his savant brother Raymond and a pittance to Charlie; they travel cross-country.",
-	industry_rating="R")
+	r = requests.get(search_movie)
+	response = r.json()['results'][0]
+	title = response['original_title']
+	summary = response['overview']
+	poster = 'http://image.tmdb.org/t/p/w185/' + response['poster_path']
+	release_date = response['release_date']
 
-session.add(rain_man)
-session.commit()
+	newMovie = Movie(title=title, summary=summary, poster=poster, 
+		release_date=release_date, director=moviePerson)
 
-the_circle = Movie(title="The Circle",
-	summary="A woman lands a dream job at a powerful tech company called the Circle, only to uncover an agenda that will affect the lives of all of humanity.",
-	industry_rating="PG13")
+	session.add(newMovie)
+	session.commit()
 
-session.add(the_circle)
-session.commit()
+if __name__ == '__main__':
+	moviePerson = create_person_obj("Sharon", "Maguire", "University of Wales Aberystwyth")
+	create_movie_obj("Bridget Jones's Diary", moviePerson)
 
-whiplash = Movie(title="Whiplash",
-	summary="A promising young drummer enrolls at a cut-throat music conservatory where his dreams of greatness are mentored by an instructor who will stop at nothing to realize a student's potential.",
-	industry_rating="R")
+	moviePerson = create_person_obj("Susan", "Seidelman", "New York University")
+	create_movie_obj("Desperately Seeking Susan", moviePerson)
 
-session.add(whiplash)
-session.commit()
+	moviePerson = create_person_obj("Kathryn", "Bigelow", "Columbia University")
+	create_movie_obj("The Hurt Locker", moviePerson)
+	
+	moviePerson = create_person_obj("Jocelyn", "Moorhouse", "Australian Film, Television and Radio School (AFTRS)")
+	create_movie_obj("Proof", moviePerson)
 
-wonder_woman = Movie(title="Wonder Woman",
-	summary="Before she was Wonder Woman she was Diana, princess of the Amazons, trained warrior. When a pilot crashes and tells of conflict in the outside world, she leaves home to fight a war to end all wars, discovering her full powers and true destiny.",
-	industry_rating="PG13")
+	moviePerson = create_person_obj("Barbra", "Streisand", "Erasmus Hall High School")
+	create_movie_obj("The Prince of Tides", moviePerson)
 
-session.add(wonder_woman)
-session.commit()
+	moviePerson = create_person_obj("Julie", "Taymor", "Oberlin College")
+	create_movie_obj("Frida", moviePerson)
 
-while_you_sleeping = Movie(title="While You Were Sleeping",
-	summary="A hopeless romantic Chicago Transit Authority token collector is mistaken for the fiancee of a coma patient.",
-	industry_rating="PG")
+	moviePerson = create_person_obj("Clio", "Barnard", "Northumbria University")
+	create_movie_obj("The Arbor", moviePerson)
 
-session.add(while_you_sleeping)
-session.commit()
+	moviePerson = create_person_obj("Gurinder", "Chadha", "University of East Anglia")
+	create_movie_obj("Bend It Like Beckham", moviePerson)
 
-print("added movie items!")
+	moviePerson = create_person_obj("Sarah", "Gavron", "Edinburgh College of Art")
+	create_movie_obj("Suffragette", moviePerson)
+
+	#Movie.__table__.drop()
