@@ -1,9 +1,19 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Text, DateTime
+import datetime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
 Base = declarative_base()
+
+class UserProfile(Base):
+	__tablename__ = 'userProfile'
+
+	id = Column(Integer, primary_key=True)
+	email = Column(String(100), unique=True, nullable=False)
+	name = Column(String(100), nullable=True)
+	picture_url = Column(String(200))
+	created_at = Column(DateTime, default=datetime.datetime.utcnow())
 
 class Person(Base):
 	__tablename__ = 'person'

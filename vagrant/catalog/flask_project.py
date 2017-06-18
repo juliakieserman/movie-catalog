@@ -3,7 +3,7 @@ from flask_bootstrap import Bootstrap
 from flask_scss import Scss
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Movie, Rating, Person
+from database_setup import Base, Movie, Rating, Person, UserProfile
 from flask import session as login_session
 import random
 import string
@@ -28,9 +28,28 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+@app.context_processor
+def inject_user():
+	isUser = ''
+	if 'username' not in login_session:
+		isUser = 'Log In'
+	else:
+		isUser = 'Log Out'
+	return dict(isUser = isUser)
+
 @app.route('/')
 @app.route('/home')
 def homePage():
+	print('does this solve it?')
+	if 'username' in login_session:
+		q = session.query(UserProfile.id).filter(UserProfile.email == login_session['email'])
+    	#if session.query(q.exists()).scalar() == False:
+    	newUser = UserProfile(email=login_session['email'], name=login_session['username'], picture_url=login_session['picture'])
+    	session.add(newUser)
+    	session.commit()
+    	print('made new user!')
+    	print(newUser)
+
 	movies = session.query(Movie).order_by(asc(Movie.title))
 	return render_template('home.html', movies = movies)
 
@@ -122,6 +141,45 @@ def gconnect():
     print("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
+
+@app.route('/gdisconnect')
+def gdisconnect():
+    access_token = login_session['access_token']
+    print 'In gdisconnect access token is %s', access_token
+    print 'User name is: ' 
+    print login_session['username']
+    if access_token is None:
+ 	print 'Access Token is None'
+    	response = make_response(json.dumps('Current user not connected.'), 401)
+    	response.headers['Content-Type'] = 'application/json'
+    	return response
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[0]
+    print 'result is '
+    print result
+    if result['status'] == '200':
+	del login_session['access_token'] 
+    	del login_session['gplus_id']
+    	del login_session['username']
+    	del login_session['email']
+    	del login_session['picture']
+    	response = make_response(json.dumps('Successfully disconnected.'), 200)
+    	response.headers['Content-Type'] = 'application/json'
+    	return response
+    else:
+	
+    	response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+    	response.headers['Content-Type'] = 'application/json'
+    	return response
+
+@app.route('/user')
+def showUser():
+	if 'username' not in login_session:
+		return redirect('/login')
+	user = session.query(UserProfile).filter_by(email=login_session['email']).one()
+	return render_template('profile.html', user=user)
+
 
 @app.route('/movie/<int:movie_id>/')
 def showMovie(movie_id):
