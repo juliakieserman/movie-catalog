@@ -4,13 +4,8 @@
 	{{ super() }}
 {% endblock %}
 {% block content %}
-	<div class="row">
-		{% for movie in movies %}
-		<div class="col-md-3"> 
-			<a href="{{url_for('showMovie', movie_id=movie.id)}}">
-				<img src="{{movie.poster}}">
-			</a>
-		</div>
-		{% endfor %}
-	</div>
+<header class="jumbotron">
+	<h1> TESTER </h1>
+	<p> Welcome to my site </p>
+</header>
 {% endblock %}

@@ -4,20 +4,38 @@
     {% block head %}
     <title>{% block title %} {% endblock %} - WotT</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
-    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <!-- link for fontawesome assets -->
+    <link rel='stylesheet' href="{{ url_for('static', filename='font-awesome/css/font-awesome.min.css')}}">
     <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <!-- links for bootstrap assets -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" media="screen">
     <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
 	  <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
     {% endblock %}
   </head>
   <body>
     <!-- nav bar -->
-    <nav class="navbar navbar-light bg-faded">
-      <a href="#"> Women of the Talkies </a>
+    <nav class="navbar fixed-top navbar-light bg-faded">
+      <h1 id="navbar-text"> Women of the Talkies </h1>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('homePage') }}"> Home </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('viewMovies') }}"> Movies </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('viewDirectors') }}"> Directors </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('showUser') }}"> Profile </a>
+          </li>
+        </ul>
+      </div>
+      <!--<a class="pull-right" href="{{ url_for('gdisconnect') }}"> {{isUser}} </a>-->
     </nav>
-    <div class="container">
       {% block content %}{% endblock %}
-    </div>
   </body>
 </html>
