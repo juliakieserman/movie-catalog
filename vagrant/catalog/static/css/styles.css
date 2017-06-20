@@ -1,5 +1,9 @@
 @import url(//netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css);
 
+body {
+	background-color: #C0B283;
+}
+
 img {
 	margin-top: 5em;
 }
@@ -7,12 +11,45 @@ img {
 /* base.html styles */
 .navbar {
 	background-color: #373737;
+	margin-bottom: 0px;
+	text-align: center;
 }
 
-#header-text {
+nav {
+	color: white;
+}
+
+nav ul {
+	list-style: none;
+}
+
+nav li {
+	margin-left: 10px;
+	margin-right: 10px;
+	font-size: 1.5em;
+}
+
+nav a {
+	color: white;
+}
+
+#navbar-text {
 	color: white;
 	font-size: 2em;
 	text-decoration: none;
+}
+
+/* home.html styles*/
+#reel {
+	width: 50%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#reel-row {
+	display: flex;
+	flex-direction: column;
+	text-align: center;
 }
 
 /* movie.html styles */
@@ -51,6 +88,23 @@ input[type=checkbox].with-font ~ label:before {
 }
 input[type=checkbox].with-font:checked ~ label:before {
     content: "\f005";        
-    color: yellow;
+    color: #C0B283;
+}
+
+/* director.html styles */
+.custom-card {
+	width: 150px;
+	border: 1px solid;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.custom-card-header {
+
+}
+
+.custom-card-main {
+
 }
 

@@ -4,8 +4,9 @@
 	{{ super() }}
 {% endblock %}
 {% block content %}
-<header class="jumbotron">
-	<h1> TESTER </h1>
-	<p> Welcome to my site </p>
-</header>
+<div id="reel-row">
+	<img id="reel" src="{{ url_for('static', filename='film.png') }}">
+	<h2> Welcome to the site. Explore incredible movies created by female directors. Log in to add films and directors to our database, and leave comments/reviews on things you've especially enjoyed! </h2>
+</div>
+
 {% endblock %}
