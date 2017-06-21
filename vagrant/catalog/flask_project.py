@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, make_response, url_for
+from flask import Flask, render_template, request, make_response, url_for, redirect, jsonify
 from flask_bootstrap import Bootstrap
+from flask_restless import APIManager
 from flask_scss import Scss
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Movie, Rating, Person, UserProfile
+from database_setup import Base, Movie, Rating, Person, UserProfile, Comment
 from flask import session as login_session
 import random
 import string
@@ -14,29 +15,29 @@ import httplib2
 import json
 import requests
 
-app = Flask(__name__, static_url_path='/static')
-Scss(app, static_dir='static', asset_dir='assets')
-
-CLIENT_ID = json.loads(
-    open('client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "Restaurant Menu Application"
-
 engine = create_engine('sqlite:///moviereviews.db')
 Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+app = Flask(__name__, static_url_path='/static')
+apimanager = APIManager(app, session=session)
+apimanager.create_api(Movie, collection_name='movie')
+
+Scss(app, static_dir='static', asset_dir='assets')
+
+CLIENT_ID = json.loads(
+    open('client_secrets.json', 'r').read())['web']['client_id']
+APPLICATION_NAME = "Restaurant Menu Application"
+
 @app.context_processor
 def if_user():
 	isUser = ''
-	loggedIn = False
+	loggedIn = True
 	if 'username' in login_session is False:
-		isUser = 'Log In'
-	else:
-		isUser = 'Log Out'
-		loggedIn = True
-	return dict(isUser = isUser, loggedIn = loggedIn)
+		loggedIn = False
+	return dict(loggedIn = loggedIn)
 
 @app.route('/')
 @app.route('/home')
@@ -185,22 +186,56 @@ def showUser():
 	print(user.picture_url)
 	return render_template('profile.html', user=user)
 
+# route for viewing all directors
 @app.route('/directors')
 def viewDirectors():
 	directors = session.query(Person).order_by(asc(Person.last_name))
 	return render_template('directors.html', directors=directors)
 
-@app.route('/movie/<int:movie_id>/')
+# API endpoint for directors
+@app.route('/directors/JSON')
+def directorsJSON():
+	directors = session.query(Person).order_by(asc(Person.last_name))
+	return jsonify(Directors=[i.to_json() for i in directors])
+
+# route for viewing single movie
+@app.route('/movies/<int:movie_id>/', methods=['GET', 'POST'])
 def showMovie(movie_id):
 	movie = session.query(Movie).filter_by(id=movie_id).one()
+	director = session.query(Person).filter_by(id=movie.director_id)
 	ratings = session.query(Rating).filter_by(movie_id = movie_id)
-	return render_template('movie.html', movie=movie)
+	if request.method == 'GET':
+		return render_template('movie.html', movie=movie, director=director)
+	else:
+		if 'username' not in login_session:
+			return redirect('/login')
+		else:
+			comment = request.form['comment']
+			user = session.query(UserProfile).filter_by(email=login_session['email']).one()
+			newComment = Comment(data=comment, movie=movie, user=user)
+			session.add(newComment)
+			session.commit()
+		return render_template('movie.html', movie=movie, director=director)
 
+# API endpoint for single movie
+@app.route('/movies/<int:movie_id>/JSON')
+def movieJSON(movie_id):
+	movie = session.query(Movie).filter_by(id=movie_id).one()
+	return jsonify(Movie=movie.to_json())
+
+# route for viewing all movies
 @app.route('/movies')
 def viewMovies():
 	movies = session.query(Movie).order_by(asc(Movie.title))
 	return render_template('movies.html', movies = movies)
 
+# API endpoint for all movies
+@app.route('/movies/JSON')
+def moviesJSON():
+	movies = session.query(Movie).order_by(asc(Movie.title))
+	return jsonify(Movies=[i.to_json() for i in movies])
+
+# route for adding a new movie
 @app.route('/movies/add', methods=['GET', 'POST'])
 def newMovie():
 	if 'username' not in login_session:
@@ -228,7 +263,7 @@ def newMovie():
 		print(user)
 		movieObj = createMovieObj(title, newPerson)
 
-		return redirect('/movies')
+	return redirect('/movies')
 
 def createMovieObj(movie, moviePerson):
 	data_string = ("https://api.themoviedb.org/3/search/movie?api_key"
