@@ -5,9 +5,7 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-    <div class="row">
 		{% for director in directors %}
-		<div class="col-md-4">
 			<!-- start card content -->
 			<div class="card">
                         <div class="card-block">
@@ -37,11 +35,7 @@
             </div>
         </div>
         <!-- end card content -->
-        {% if loop.index % 4 == 0 and not loop.last %}
-            </div><div class="row">
-        {% endif %}
 	{% endfor %}
-</div>
 </div>
 
 {% endblock %}

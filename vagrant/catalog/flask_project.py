@@ -1,13 +1,13 @@
 from flask import Flask, render_template, request, make_response, url_for, redirect, jsonify
 from flask_bootstrap import Bootstrap
 from flask_restless import APIManager
-from flask_scss import Scss
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Movie, Rating, Person, UserProfile, Comment
+from database_setup import Base, Movie, Person, UserProfile, Comment
 from flask import session as login_session
 import random
 import string
+import pickle
 
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
@@ -25,31 +25,25 @@ app = Flask(__name__, static_url_path='/static')
 apimanager = APIManager(app, session=session)
 apimanager.create_api(Movie, collection_name='movie')
 
-Scss(app, static_dir='static', asset_dir='assets')
-
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Restaurant Menu Application"
 
 @app.context_processor
 def if_user():
-	isUser = ''
-	loggedIn = True
-	if 'username' in login_session is False:
-		loggedIn = False
-	return dict(loggedIn = loggedIn)
+	if login_session.get('username') is False:
+		return dict(loggedIn = False)
+	else:
+		return dict(loggedIn = True)
 
 @app.route('/')
 @app.route('/home')
 def homePage():
-	if 'username' in login_session:
-		q = session.query(UserProfile.id).filter(UserProfile.email == login_session['email'])
-    	if session.query(q.exists()).scalar() == False:
-    		newUser = UserProfile(email=login_session['email'], name=login_session['username'], picture_url=login_session['picture'])
+	if login_session.get('username') == True:
+		if session.query(UserProfile).filter(UserProfile.email==login_session['email']) is False:
+			newUser = UserProfile(email=login_session['email'], name=login_session['username'], picture_url=login_session['picture'])
     		session.add(newUser)
     		session.commit()
-    		print('made new user!')
-    		print(newUser)
 
 	return render_template('home.html')
 
@@ -82,6 +76,7 @@ def gconnect():
 
     # Check that the access token is valid.
     access_token = credentials.access_token
+    login_session['access_token'] = access_token
     url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
            % access_token)
     h = httplib2.Http()
@@ -144,53 +139,81 @@ def gconnect():
 
 @app.route('/gdisconnect')
 def gdisconnect():
-    credentials = login_session['credentials'].to_json()
-    print('credentials')
-    print(credentials)
-    access_token = credentials.access_token
-    print 'In gdisconnect access token is %s', access_token
-    print 'User name is: ' 
-    print login_session['username']
-    if access_token is None:
- 	print 'Access Token is None'
-    	response = make_response(json.dumps('Current user not connected.'), 401)
-    	response.headers['Content-Type'] = 'application/json'
-    	return response
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
-    h = httplib2.Http()
-    result = h.request(url, 'GET')[0]
-    print 'result is '
-    print result
-    if result['status'] == '200':
-	del login_session['access_token'] 
-    	del login_session['gplus_id']
-    	del login_session['username']
-    	del login_session['email']
-    	del login_session['picture']
-    	response = make_response(json.dumps('Successfully disconnected.'), 200)
-    	response.headers['Content-Type'] = 'application/json'
-    	return response
-    else:
-	
-    	response = make_response(json.dumps('Failed to revoke token for given user.', 400))
-    	response.headers['Content-Type'] = 'application/json'
-    	return response
+	credentials = login_session.get('credentials')
+	access_token = login_session['access_token']
+	print(access_token)
+	if access_token is None:
+		print 'Access Token is None'
+		response = make_response(json.dumps('Current user not connected.'), 401)
+		response.headers['Content-Type'] = 'application/json'
+		return response
+	url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+	h = httplib2.Http()
+	result = h.request(url, 'GET')[0]
+	print result
+	if result.status == 200:
+		del login_session['access_token']
+		del login_session['gplus_id']
+		del login_session['username']
+		del login_session['email']
+		del login_session['picture']
+		response = make_response(json.dumps('Successfully disconnected.'), 200)
+		response.headers['Content-Type'] = 'application/json'
+		return response
+	else:
+		response = make_response(json.dumps('Failed to revoke token for given user.'), 400)
+		response.headers['Content-Type'] = 'application/json'
+		return response
+
+	return redirect('/login')
 
 @app.route('/user')
 def showUser():
 	if 'username' not in login_session:
 		return redirect('/login')
 	user = session.query(UserProfile).filter_by(email=login_session['email']).one()
-	print(user.email)
-	print(user.name)
-	print(user.picture_url)
-	return render_template('profile.html', user=user)
+	comments = session.query(Comment).filter_by(user_id=user.id).all()
+	movies = session.query(Movie).filter_by(user_id=user.id).all()
+	return render_template('profile.html', user=user, comments=comments, movies=movies)
+
+# route to delete my comment
+@app.route('/user/comment/delete/<int:id>', methods=['POST'])
+def deleteComment(id):
+	comment = session.query(Comment).filter_by(id=id).one()
+	session.delete(comment)
+	session.commit()
+	return redirect('/user')
+
+# route to display edit comment page
+@app.route('/user/comment/edit/<int:id>', methods=['POST'])
+def editComment(id):
+	comment = session.query(Comment).filter_by(id=id).one()
+	return render_template('editComment.html', comment=comment, movie=comment.movie)
+
+# route to save comment changes
+@app.route('/user/comment/edit/<int:id>/save', methods=['POST'])
+def saveCommentChanges(id):
+	comment = session.query(Comment).filter_by(id=id).one()
+	changes = request.form['comment']
+	comment.data = changes
+	session.commit()
+	return redirect('/user')
 
 # route for viewing all directors
 @app.route('/directors')
 def viewDirectors():
 	directors = session.query(Person).order_by(asc(Person.last_name))
-	return render_template('directors.html', directors=directors)
+	count = directors.count()
+	movieMatching = {}
+	# get list of movies for each director
+	for d in directors:
+		movies = session.query(Movie).filter_by(director_id=d.id).all()
+		movieList = []
+		for m in movies:
+			movieVal = (m.title, m.release_date, m.id)
+			movieList.append(movieVal)
+		movieMatching[d.id] = movieList
+	return render_template('directors.html', directors=directors, movies=movieMatching, count=count)
 
 # API endpoint for directors
 @app.route('/directors/JSON')
@@ -203,19 +226,29 @@ def directorsJSON():
 def showMovie(movie_id):
 	movie = session.query(Movie).filter_by(id=movie_id).one()
 	director = session.query(Person).filter_by(id=movie.director_id)
-	ratings = session.query(Rating).filter_by(movie_id = movie_id)
-	if request.method == 'GET':
-		return render_template('movie.html', movie=movie, director=director)
-	else:
+	comments = session.query(Comment).filter_by(movie_id=movie.id).all()
+
+	if request.method == 'POST':
 		if 'username' not in login_session:
 			return redirect('/login')
 		else:
 			comment = request.form['comment']
+			print(comment)
 			user = session.query(UserProfile).filter_by(email=login_session['email']).one()
-			newComment = Comment(data=comment, movie=movie, user=user)
+			print('this is my user')
+			print(user.id)
+			newComment = Comment(data=comment, movie=movie, user_id=user.id)
+			print(newComment.user_id)
 			session.add(newComment)
 			session.commit()
-		return render_template('movie.html', movie=movie, director=director)
+	
+	return render_template('movie.html', movie=movie, director=director, comments=comments)
+
+# API endpoint for comments
+@app.route('/movies/<int:movie_id>/comments/JSON')
+def commentsJSON(movie_id):
+	comments = session.query(Comment).filter_by(movie_id=movie_id).all()
+	return jsonify(Comment=[i.to_json() for i in comments])
 
 # API endpoint for single movie
 @app.route('/movies/<int:movie_id>/JSON')
@@ -251,17 +284,14 @@ def newMovie():
 		# NOTE: assuming no two people have the same name
 		newPerson = session.query(Person).filter(Person.first_name == fName).filter(Person.last_name == lName)
 		if newPerson is True:
-			print('in dis loop')
 			newPerson = session.query(Person).filter_by(first_name=fName, last_name=lName)
 		else:
-			print('this is the loop)')
 			newPerson = Person(first_name=fName, last_name=lName, school=school)
 			session.add(newPerson)
 			session.commit()
 
 		user = session.query(UserProfile).filter_by(email=login_session['email']).one()
-		print(user)
-		movieObj = createMovieObj(title, newPerson)
+		createMovieObj(title, newPerson)
 
 	return redirect('/movies')
 
@@ -281,16 +311,19 @@ def createMovieObj(movie, moviePerson):
 	poster = 'http://image.tmdb.org/t/p/w185/' + response['poster_path']
 	release_date = response['release_date']
 
-	newMovie = Movie(title=title, summary=summary, poster=poster, 
+	#check to see if this movie exists
+	movie = session.query(Movie).filter(Movie.poster == poster)
+	if movie is False:
+		newMovie = Movie(title=title, summary=summary, poster=poster, 
 		release_date=release_date, director=moviePerson)
 
-	session.add(newMovie)
-	session.commit()
-	return newMovie
+		session.add(newMovie)
+		session.commit()
 
-@app.route('/submit_rating', methods=['POST'])
-def submitRating():
-	print(request.form['star5'])
+# handle unfound page errors
+@app.errorhandler(404)
+def pageNotFound(error):
+	return render_template('404.html')
 
 if __name__ == '__main__':
 	app.secret_key = 'super_secret_key'

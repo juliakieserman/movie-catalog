@@ -41,6 +41,7 @@ class Movie(Base):
 	director = relationship(Person)
 	user_id = Column(Integer, ForeignKey('userProfile.id'))
 	user = relationship(UserProfile)
+	created_at = Column(DateTime, default=datetime.datetime.utcnow())
 
 	def to_json(self):
 		return dict(id=self.id,
@@ -54,21 +55,17 @@ class Comment(Base):
 	__tablename__ = 'comment'
 
 	id = Column(Integer, primary_key=True)
-	data = Column(String(200), nullable=False)
-	user_id = Column(Integer, ForeignKey('userProfile.id'))
-	user = relationship(UserProfile)
-	movie_id = Column(Integer, ForeignKey('movie.id'))
-	movie = relationship(Movie)
-
-class Rating(Base):
-	__tablename__ = 'rating'
-
-	id = Column(Integer, primary_key=True)
-	rating = Column(Integer, nullable=False)
+	data = Column(String(250), nullable=False)
 	movie_id = Column(Integer, ForeignKey('movie.id'))
 	movie = relationship(Movie)
 	user_id = Column(Integer, ForeignKey('userProfile.id'))
 	user = relationship(UserProfile)
+	created_at = Column(DateTime, default=datetime.datetime.utcnow())
+
+	def to_json(self):
+		return dict(id=self.id,
+			data=self.data,
+			movie=self.movie.to_json)
 
 engine = create_engine('sqlite:///moviereviews.db')
 
