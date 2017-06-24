@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block head %}
+	{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+	<img class="error" src="{{ url_for('static', filename='error.jpg') }}">
+	<p class="center"> Uh Oh, looks like you stumbled into unknown territory. <a href="{{url_for('homePage')}}"> Go home. </a></p>
+</div>
+{% endblock %}

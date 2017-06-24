@@ -5,14 +5,28 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-	<div class="row">
-		{% for movie in movies %}
+	<div class="row display-title">
+		<h2> Awesome Female-Directed Movies </h2>
+		<p> Is your favorite movie missing? </p>
+		{% if loggedIn == true %}
+		<p><a href="{{url_for('newMovie')}}">Click here </a> to add it now!</p>
+		{% else %}
+		<p><a href="{{url_for('login')}}"> Sign in </a> to add it now! </p>
+		{% endif %}
+	</div>
+
+	{% for movie in movies %}
+		{% if loop.index % 4 == 0 %}
+			<div class="row">
+		{% endif %}
 		<div class="col-md-3"> 
 			<a href="{{url_for('showMovie', movie_id=movie.id)}}">
-				<img src="{{movie.poster}}">
+				<img class="movie-poster" src="{{movie.poster}}">
 			</a>
 		</div>
-		{% endfor %}
-	</div>
+		{% if (loop.index % 4 == 0 or loop.last) %}
+			</div>
+		{% endif %}
+	{% endfor %}
 </div>
 {% endblock %}

@@ -1,6 +1,76 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Profile Page{% endblock %}
 {% block head %}
 	{{ super() }}
 {% endblock %}
+{% block content %}
 
+<div class="container">
+	<div class="row">
+		<div class="col-md-8">
+			<h1 class="center"> Welcome back, {{user.name}}! </h1>
+		</div>
+		<div class="col-md-4">
+			<img class="img-responsive" src="{{user.picture_url}}">
+		</div>
+	</div>
+	<h3> Your Activity: </h3>
+	<!-- comments -->
+	<div class="row">
+		<div class="activity">
+			<div class="row">
+				<p class="activity-header"> My Comments: </p>
+			</div>
+			{% if comments|length < 1 %}
+				<p> You haven't commented on any movies yet! </p>
+			{% else %}
+				{% for comment in comments %}
+					<div class="row">
+						<p class="activity-subheader"> Comment: </p> {{comment.data}}
+						<br>
+						<p class="activity-subheader"> Movie: </p> {{comment.movie.title}}
+						<br>
+						<p class="activity-subheader"> Date Created: </p> {{comment.created_at.strftime('%m-%d-%Y')}}
+					</div>
+					<div class="row">
+						<form method="post" action="{{ url_for('deleteComment', id=comment.id) }}">
+							<button class="fa fa-trash" aria-hidden="true"></button>
+						</form>
+						<form method="post" action="{{ url_for('editComment', id=comment.id) }}">
+							<button class="fa fa-pencil" aria-hidden="true"></button>
+						</form>
+					</div>
+				<br>
+				{% endfor %}
+			{% endif %}
+			<br>
+		</div>
+	</div>
+
+	<!-- movies -->
+	<div class="row">
+		<div class="activity">
+			<div class="row">
+				<p class="activity-header"> My Movies: </p>
+			</div>
+			{% if comments|length < 1 %}
+				<p> You haven't added any movies yet! </p>
+			{% else %}
+				{% for movie in movies %}
+					<div class="row">
+						<p class="activity-subheader"> Movie: </p> {{movie.title}}
+						<br>
+						<p class="activity-subheader"> Movie: </p> {{comment.movie.title}}
+						<br>
+						<p class="activity-subheader"> Date Created: </p> {{movie.created_at.strftime('%m-%d-%Y')}}
+					</div>
+				<br>
+				{% endfor %}
+			{% endif %}
+			<br>
+		</div>
+	</div>
+</div>
+
+
+{% endblock %}

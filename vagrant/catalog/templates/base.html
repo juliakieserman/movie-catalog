@@ -16,26 +16,34 @@
   </head>
   <body>
     <!-- nav bar -->
-    <nav class="navbar fixed-top navbar-light bg-faded">
-      <h1 id="navbar-text"> Women of the Talkies </h1>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('homePage') }}"> Home </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('viewMovies') }}"> Movies </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('viewDirectors') }}"> Directors </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('showUser') }}"> Profile </a>
-          </li>
-        </ul>
-      </div>
-      <!--<a class="pull-right" href="{{ url_for('gdisconnect') }}"> {{isUser}} </a>-->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{{ url_for('homePage') }}">Women of the Talkies</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="{{ url_for('homePage') }}">Home</a></li>
+            <li><a href="{{ url_for('viewMovies') }}">Movies</a></li>
+            <li><a href="{{ url_for('viewDirectors') }}">Directors</a></li>
+            <li><a href="{{ url_for('showUser') }}">Profile</a></li>
+            {% if loggedIn == true %}
+              <li><a href="{{ url_for('gdisconnect') }}"> Log Out </a></li>
+            {% else %}
+              <li><a href="{{ url_for('showLogin') }}"> Log In </a></li>
+            {% endif %}
+          </ul>
+        </div><!--/.navbar-collapse -->
     </nav>
-      {% block content %}{% endblock %}
+  {% block content %}{% endblock %}
   </body>
+  <script>
+    $(document).ready(function () {
+        $('.dropdown-toggle').dropdown();
+    });
+</script>
 </html>

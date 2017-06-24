@@ -5,12 +5,43 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-	<div class="row">
+    <div class="row">
 		{% for director in directors %}
-		<div class="col-md-3"> 
-		{{director.first_name}} {{director.last_name}}
-		</div>
-		{% endfor %}
-	</div>
+		<div class="col-md-4">
+			<!-- start card content -->
+			<div class="card">
+                        <div class="card-block">
+            <h4 class="card-title">
+            <i class="fa fa-user" aria-hidden="true"></i>
+            {{director.first_name}} {{director.last_name}}
+            </h4>
+            <div class="card-text">
+                {% for movie in movies[director.id] %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="category-header"> Movies: </p>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="{{url_for('showMovie', movie_id=movie[2])}}">{{movie[0]}} ({{movie[1][:4]}})</a>
+                    </div>
+                 </div>
+                {% endfor %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="category-header"> School: </p>
+                    </div>
+                    <div class="col-md-6">
+                        {{director.school}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end card content -->
+        {% if loop.index % 4 == 0 and not loop.last %}
+            </div><div class="row">
+        {% endif %}
+	{% endfor %}
 </div>
+</div>
+
 {% endblock %}

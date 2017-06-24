@@ -4,41 +4,47 @@
 	{{ super() }}
 {% endblock %}
 {% block content %}
-<div class="row movie-title">
-	{{movie.title}}
-</div>
-<div class="row">
-	<div class="col-md-12 center-block">
-		<img src="{{movie.poster}}">
+<div class="container">
+	<div class="row movie-title">
+		<h1> {{movie.title}} </h1>
+	</div>
+	<div class="row">
+		<div class="col-md-6 center-block">
+			<img class="movie-poster" src="{{movie.poster}}">
+		</div>
+
+		<div class="col-md-6">
+			<h2> Summary:</h2> <p>{{movie.summary}}</p>
+			<h2> Release Date: </h2> <p>{{movie.release_date}}</p>
+			<h2> Director: </h2> <p>{{movie.director.first_name}} {{movie.director.last_name}}</p>
+		</div>
+	</div>
+
+	<!-- leave a comment -->
+	<div class="row">
+		<div class="col-md-6">
+			<p class="comment-header"> Comments: </p>
+			<!-- display comments -->
+			<div class="comment-box">
+				{% for comment in comments %}
+					{{comment.data}}
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			{% if loggedIn == true %}
+			<form action="#" method="post" id="comment" style="display:flex">
+				<label for="text">Leave a comment:</label>
+				<input type="text" class="form-control" maxlength="100" name="comment">
+				<button type="submit" class="btn btn-default" id="submit"">Submit </button>
+			</form>
+			{% else %}
+			<p> You must be signed in to leave a comment. Sign in <a href="{{url_for('login')}}"> here. </a></p>
+			{% endif %}
+		</div>
 	</div>
 </div>
-
-<p> Ratings </p>
-<div class="progress">
-  <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-</div>
-
-<p> Leave a Rating </p>
-	<div class="stars">
-    	<input id="star1" type="checkbox" class="with-font" />
-    	<label for="star1"></label>
-  </div>
-  <div class="stars">
-    	<input id="star2" type="checkbox" class="with-font"/>
-    	<label for="star2"></label>
-  </div>
-  <div class="stars">
-    	<input id="star3" type="checkbox" class="with-font" />
-    	<label for="star3"></label>
-  </div>
-  <div class="stars">
-    	<input id="star4" type="checkbox" class="with-font" />
-    	<label for="star4"></label>
-  </div>
-  <div class="stars">
-    	<input id="star5" type="checkbox" class="with-font" />
-    	<label for="star5"></label>
-  </div>
-
-</form>
 {% endblock %}

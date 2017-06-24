@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block head %}
+	{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+	<form action="{{ url_for('saveCommentChanges', id=comment.id) }} " method="post">
+		<label for="comment"> Edit your comment for movie {{movie.title}} then save changes </label>
+		<input type="text" class="form-control" maxlength="100" name="comment" placeholder="{{comment.data}}">
+		<button type="submit" class="btn btn-default" id="submit"">
+		Save Changes </button>
+	</form>
+</div>
+{% endblock %}

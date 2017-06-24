@@ -4,8 +4,14 @@ body {
 	background-color: #C0B283;
 }
 
-img {
-	margin-top: 5em;
+.container {
+	margin-top: 5%;
+}
+
+.error {
+	width: 50%;
+	margin: 0 auto;
+	display: flex;
 }
 
 /* base.html styles */
@@ -44,6 +50,7 @@ nav a {
 	width: 50%;
 	margin-left: auto;
 	margin-right: auto;
+	margin-top: 15%;
 }
 
 #reel-row {
@@ -52,59 +59,58 @@ nav a {
 	text-align: center;
 }
 
+/* profile.html styles */
+.center {
+	text-align: center;
+}
+
+.activity-header {
+	text-decoration: underline;
+}
+
 /* movie.html styles */
 .movie-title {
 	text-align: center;
 }
 
-.stars {
+.movie-poster {
+	margin: 5em;
+}
+
+.display-title {
+	text-align: center;
+}
+
+.comment-header {
+	text-decoration: underline;
+}
+
+/* user.html styles */
+.activity-subheader {
+	display: inline;
+	font-weight: bold;
+}
+
+form {
 	display: inline;
 }
 
-input[type=checkbox].with-font {
-    border: 0;
-    clip: rect(0 0 0 0);
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    padding: 0;
-    position: absolute;
-    width: 1px;
-}
-    
-input[type=checkbox].with-font ~ label:before {
-    font-family: FontAwesome;
-    display: inline-block;
-    content: "\f1db";
-    letter-spacing: 10px;
-    font-size: 1.2em;
-    color: #535353;
-    width: 1.4em;
+.img-responsive {
+	max-width: 25%;
 }
 
-
-input[type=checkbox].with-font ~ label:before {        
-    content: "\f006";
-}
-input[type=checkbox].with-font:checked ~ label:before {
-    content: "\f005";        
-    color: #C0B283;
+/* directors.html styles */
+.card {
+    width: 30rem;
+    background-color: #F4F4F4;
+    border: 3px solid #373737;
 }
 
-/* director.html styles */
-.custom-card {
-	width: 150px;
-	border: 1px solid;
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
+.category-header {
+	font-weight: bold;
 }
 
-.custom-card-header {
-
+.card-title {
+	border-bottom: 1px;
+	text-align: center;
 }
-
-.custom-card-main {
-
-}
-
